@@ -19,11 +19,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ServicoAgendaConsulta implements PortaAgendaConsulta {
 
+    private static final AtomicLong idGerador = new AtomicLong(1);
+
     private final PortaAnimalRepositorio animalRepo;
     private final PortaVeterinarioRepositorio vetRepo;
     private final PortaConsultaRepositorio consultaRepo;
     private final PortaNotificacaoTutor notificacao;
-    private final AtomicLong idGerador = new AtomicLong(1);
 
     public ServicoAgendaConsulta(
             PortaAnimalRepositorio animalRepo,
