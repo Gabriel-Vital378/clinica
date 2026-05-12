@@ -42,35 +42,40 @@ public class Main {
         vets.salvar(dra);
         vets.salvar(dr);
 
-        // ── Composição com Console ──
+        // ── Passo 1: Agendar ROTINA com Console ──
         PortaAgendaConsulta agenda = new ServicoAgendaConsulta(
                 animais, vets, consultas, new NotificacaoConsole());
 
-        // Passo 1: Agendar ROTINA com Console
         Consulta c1 = agenda.agendarConsulta(
                 1L, 1L,
                 LocalDate.of(2025, 7, 15), LocalTime.of(14, 30),
                 TipoConsulta.ROTINA);
 
-        // ── Composição com CSV — zero linhas do domínio alteradas ──
+        // ── Passo 2: Agendar EMERGENCIA com CSV — troca só o adaptador de notificação ──
+        // O mesmo serviço é recriado apenas para demonstrar a troca; repositórios são os mesmos
         PortaAgendaConsulta agendaCsv = new ServicoAgendaConsulta(
                 animais, vets, consultas, new NotificacaoCsv("notificacoes.csv"));
 
-        // Passo 2: Agendar EMERGENCIA com CSV
         Consulta c2 = agendaCsv.agendarConsulta(
                 2L, 2L,
                 LocalDate.of(2025, 7, 16), LocalTime.of(9, 0),
                 TipoConsulta.EMERGENCIA);
 
-        // Passo 3: Realizar primeira consulta
-        Consulta c1Realizada = agenda.realizarConsulta(c1.getId(), "Exame de rotina sem alterações.");
-        System.out.println("[CONSULTA REALIZADA] Animal: " + c1Realizada.getAnimal().getNome()
-                + " | Obs.: " + c1Realizada.getObservacoes());
+        System.out.println("[AGENDAMENTO via CSV] Tutor: " + luna.getTutor()
+                + " | Animal: " + luna.getNome()
+                + " | Vet.: " + dr.getNome()
+                + " | Data: " + c2.getData() + " às " + c2.getHora()
+                + " | Tipo: " + c2.getTipo());
 
-        // Passo 4: Cancelar segunda consulta
+        // ── Passo 3: Realizar primeira consulta ──
+        agenda.realizarConsulta(c1.getId(), "Exame de rotina sem alterações.");
+        System.out.println("[CONSULTA REALIZADA] Animal: " + thor.getNome()
+                + " | Obs.: Exame de rotina sem alterações.");
+
+        // ── Passo 4: Cancelar segunda consulta ──
         agendaCsv.cancelarConsulta(c2.getId());
 
-        // Passo 5: Histórico do primeiro animal
+        // ── Passo 5: Histórico do primeiro animal ──
         System.out.println("\n=== Histórico de " + thor.getNome() + " ===");
         List<Consulta> historico = agenda.obterHistoricoAnimal(1L);
         for (Consulta c : historico) {
@@ -78,7 +83,7 @@ public class Main {
                     + c.getHora() + " | " + c.getTipo() + " | " + c.getSituacao());
         }
 
-        // Passo 6: Agenda da primeira veterinária
+        // ── Passo 6: Agenda da primeira veterinária ──
         System.out.println("\n=== Agenda de " + dra.getNome() + " ===");
         List<Consulta> agendaVet = agenda.obterAgendaVeterinario(1L);
         for (Consulta c : agendaVet) {
