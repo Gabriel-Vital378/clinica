@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PortaVeterinarioRepositorio {
-    Veterinario salvar(Veterinario veterinario);
+    void salvar(Veterinario vet);
     Optional<Veterinario> buscarPorId(Long id);
     List<Veterinario> buscarDisponiveis();
     List<Veterinario> buscarPorEspecialidade(String especialidade);
-    List<Veterinario> listarTodos();
 }

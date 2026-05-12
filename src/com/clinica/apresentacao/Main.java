@@ -1,9 +1,13 @@
 package com.clinica.apresentacao;
 
 import com.clinica.dominio.modelo.Animal;
+import com.clinica.dominio.modelo.Consulta;
 import com.clinica.dominio.modelo.TipoConsulta;
 import com.clinica.dominio.modelo.Veterinario;
 import com.clinica.dominio.porta.entrada.PortaAgendaConsulta;
+import com.clinica.dominio.porta.saida.PortaAnimalRepositorio;
+import com.clinica.dominio.porta.saida.PortaConsultaRepositorio;
+import com.clinica.dominio.porta.saida.PortaVeterinarioRepositorio;
 import com.clinica.dominio.servico.ServicoAgendaConsulta;
 import com.clinica.infraestrutura.adaptador.notificacao.NotificacaoConsole;
 import com.clinica.infraestrutura.adaptador.notificacao.NotificacaoCsv;
@@ -13,56 +17,73 @@ import com.clinica.infraestrutura.adaptador.persistencia.VeterinarioRepositorioM
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        var animalRepo      = new AnimalRepositorioMemoria();
-        var veterinarioRepo = new VeterinarioRepositorioMemoria();
-        var consultaRepo    = new ConsultaRepositorioMemoria();
+        // ── Repositórios compartilhados ──
+        PortaAnimalRepositorio animais     = new AnimalRepositorioMemoria();
+        PortaVeterinarioRepositorio vets   = new VeterinarioRepositorioMemoria();
+        PortaConsultaRepositorio consultas = new ConsultaRepositorioMemoria();
 
-        var animal = new Animal(1L, "Rex", "Cachorro", "Labrador",
-                LocalDate.of(2020, 3, 10), "Carlos Silva");
-        var vet = new Veterinario(1L, "Dra. Ana Lima", "CRMV-12345", "Clínica Geral");
+        // ── Cadastro de 2 animais ──
+        Animal thor = new Animal(1L, "Thor", "Cachorro", "Labrador",
+                LocalDate.of(2020, 5, 10), "João Silva");
+        Animal luna = new Animal(2L, "Luna", "Gato", "Siamês",
+                LocalDate.of(2021, 8, 22), "Maria Souza");
+        animais.salvar(thor);
+        animais.salvar(luna);
 
-        animalRepo.salvar(animal);
-        veterinarioRepo.salvar(vet);
+        // ── Cadastro de 2 veterinários ──
+        Veterinario dra = new Veterinario(1L, "Dra. Beatriz", "CRMV-1001", "Clínica Geral");
+        Veterinario dr  = new Veterinario(2L, "Dr. Marcos",   "CRMV-1002", "Ortopedia");
+        vets.salvar(dra);
+        vets.salvar(dr);
 
-        // ── Adaptador Console ──
-        System.out.println("========================================");
-        System.out.println("  ADAPTADOR: NotificacaoConsole");
-        System.out.println("========================================");
+        // ── Composição com Console ──
+        PortaAgendaConsulta agenda = new ServicoAgendaConsulta(
+                animais, vets, consultas, new NotificacaoConsole());
 
-        PortaAgendaConsulta servicoConsole = new ServicoAgendaConsulta(
-                animalRepo, veterinarioRepo, consultaRepo, new NotificacaoConsole()
-        );
+        // Passo 1: Agendar ROTINA com Console
+        Consulta c1 = agenda.agendarConsulta(
+                1L, 1L,
+                LocalDate.of(2025, 7, 15), LocalTime.of(14, 30),
+                TipoConsulta.ROTINA);
 
-        var consulta1 = servicoConsole.agendarConsulta(
-                1L, 1L, LocalDate.of(2026, 6, 15), LocalTime.of(10, 30), TipoConsulta.ROTINA
-        );
-        servicoConsole.realizarConsulta(consulta1.getId(), "Animal saudável, vacinação em dia.");
+        // ── Composição com CSV — zero linhas do domínio alteradas ──
+        PortaAgendaConsulta agendaCsv = new ServicoAgendaConsulta(
+                animais, vets, consultas, new NotificacaoCsv("notificacoes.csv"));
 
-        // ── Troca para CSV — domínio intocado ──
-        System.out.println("\n========================================");
-        System.out.println("  ADAPTADOR: NotificacaoCsv");
-        System.out.println("========================================");
+        // Passo 2: Agendar EMERGENCIA com CSV
+        Consulta c2 = agendaCsv.agendarConsulta(
+                2L, 2L,
+                LocalDate.of(2025, 7, 16), LocalTime.of(9, 0),
+                TipoConsulta.EMERGENCIA);
 
-        PortaAgendaConsulta servicoCsv = new ServicoAgendaConsulta(
-                animalRepo, veterinarioRepo, consultaRepo, new NotificacaoCsv()
-        );
+        // Passo 3: Realizar primeira consulta
+        Consulta c1Realizada = agenda.realizarConsulta(c1.getId(), "Exame de rotina sem alterações.");
+        System.out.println("[CONSULTA REALIZADA] Animal: " + c1Realizada.getAnimal().getNome()
+                + " | Obs.: " + c1Realizada.getObservacoes());
 
-        var consulta2 = servicoCsv.agendarConsulta(
-                1L, 1L, LocalDate.of(2026, 6, 20), LocalTime.of(14, 0), TipoConsulta.RETORNO
-        );
-        servicoCsv.cancelarConsulta(consulta2.getId());
+        // Passo 4: Cancelar segunda consulta
+        agendaCsv.cancelarConsulta(c2.getId());
 
-        System.out.println("\nNotificações gravadas em: notificacoes.csv");
+        // Passo 5: Histórico do primeiro animal
+        System.out.println("\n=== Histórico de " + thor.getNome() + " ===");
+        List<Consulta> historico = agenda.obterHistoricoAnimal(1L);
+        for (Consulta c : historico) {
+            System.out.println("Consulta #" + c.getId() + " — " + c.getData() + " "
+                    + c.getHora() + " | " + c.getTipo() + " | " + c.getSituacao());
+        }
 
-        // ── Histórico ──
-        System.out.println("\n========================================");
-        System.out.println("  HISTÓRICO DO ANIMAL: " + animal.getNome());
-        System.out.println("========================================");
-        consultaRepo.buscarPorAnimal(1L).forEach(c -> System.out.println("  " + c));
+        // Passo 6: Agenda da primeira veterinária
+        System.out.println("\n=== Agenda de " + dra.getNome() + " ===");
+        List<Consulta> agendaVet = agenda.obterAgendaVeterinario(1L);
+        for (Consulta c : agendaVet) {
+            System.out.println("Consulta #" + c.getId() + " — " + c.getData() + " "
+                    + c.getHora() + " | " + c.getTipo() + " | " + c.getSituacao());
+        }
     }
 }

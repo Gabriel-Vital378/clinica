@@ -4,12 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Consulta {
-    private Long id;
-    private Animal animal;
-    private Veterinario veterinario;
-    private LocalDate data;
-    private LocalTime hora;
-    private TipoConsulta tipo;
+    private final Long id;
+    private final Animal animal;
+    private final Veterinario veterinario;
+    private final LocalDate data;
+    private final LocalTime hora;
+    private final TipoConsulta tipo;
     private SituacaoConsulta situacao;
     private String observacoes;
 
@@ -24,6 +24,22 @@ public class Consulta {
         this.observacoes = "";
     }
 
+    public void realizar(String observacoes) {
+        if (this.situacao != SituacaoConsulta.AGENDADA) {
+            throw new IllegalStateException(
+                "Apenas consultas AGENDADAS podem ser realizadas. Situação atual: " + this.situacao);
+        }
+        this.situacao = SituacaoConsulta.REALIZADA;
+        this.observacoes = observacoes;
+    }
+
+    public void cancelar() {
+        if (this.situacao == SituacaoConsulta.CANCELADA) {
+            throw new IllegalStateException("Consulta já está CANCELADA.");
+        }
+        this.situacao = SituacaoConsulta.CANCELADA;
+    }
+
     public Long getId() { return id; }
     public Animal getAnimal() { return animal; }
     public Veterinario getVeterinario() { return veterinario; }
@@ -32,9 +48,6 @@ public class Consulta {
     public TipoConsulta getTipo() { return tipo; }
     public SituacaoConsulta getSituacao() { return situacao; }
     public String getObservacoes() { return observacoes; }
-
-    public void setSituacao(SituacaoConsulta situacao) { this.situacao = situacao; }
-    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
 
     @Override
     public String toString() {

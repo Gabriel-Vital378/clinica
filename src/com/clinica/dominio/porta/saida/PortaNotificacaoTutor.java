@@ -1,8 +1,9 @@
 package com.clinica.dominio.porta.saida;
 
+import com.clinica.dominio.modelo.Animal;
 import com.clinica.dominio.modelo.Consulta;
 
 public interface PortaNotificacaoTutor {
-    void notificarAgendamento(Consulta consulta);
-    void notificarCancelamento(Consulta consulta);
+    void notificarAgendamento(String tutor, Animal animal, Consulta consulta);
+    void notificarCancelamento(String tutor, Animal animal, String motivo);
 }

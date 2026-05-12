@@ -9,7 +9,7 @@ import java.util.List;
 public interface PortaAgendaConsulta {
     Consulta agendarConsulta(Long animalId, Long veterinarioId, LocalDate data, LocalTime hora, TipoConsulta tipo);
     Consulta realizarConsulta(Long consultaId, String observacoes);
-    Consulta cancelarConsulta(Long consultaId);
+    void cancelarConsulta(Long consultaId);
     List<Consulta> obterHistoricoAnimal(Long animalId);
-    List<Consulta> obterAgendaVeterinario(Long veterinarioId);
+    List<Consulta> obterAgendaVeterinario(Long vetId);
 }

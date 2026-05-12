@@ -1,27 +1,24 @@
 package com.clinica.infraestrutura.adaptador.notificacao;
 
+import com.clinica.dominio.modelo.Animal;
 import com.clinica.dominio.modelo.Consulta;
 import com.clinica.dominio.porta.saida.PortaNotificacaoTutor;
 
 public class NotificacaoConsole implements PortaNotificacaoTutor {
 
     @Override
-    public void notificarAgendamento(Consulta consulta) {
-        System.out.println("[CONSOLE] Agendamento confirmado!");
-        System.out.println("  Tutor   : " + consulta.getAnimal().getTutor());
-        System.out.println("  Animal  : " + consulta.getAnimal().getNome());
-        System.out.println("  Vet     : " + consulta.getVeterinario().getNome());
-        System.out.println("  Data    : " + consulta.getData() + " às " + consulta.getHora());
-        System.out.println("  Tipo    : " + consulta.getTipo());
-        System.out.println("----------------------------------------");
+    public void notificarAgendamento(String tutor, Animal animal, Consulta consulta) {
+        System.out.println("[AGENDAMENTO] Tutor: " + tutor
+                + " | Animal: " + animal.getNome() + " (" + animal.getRaca() + ")"
+                + " | Vet.: " + consulta.getVeterinario().getNome() + " (" + consulta.getVeterinario().getEspecialidade() + ")"
+                + " | Data: " + consulta.getData() + " às " + consulta.getHora()
+                + " | Tipo: " + consulta.getTipo());
     }
 
     @Override
-    public void notificarCancelamento(Consulta consulta) {
-        System.out.println("[CONSOLE] Consulta cancelada.");
-        System.out.println("  Tutor   : " + consulta.getAnimal().getTutor());
-        System.out.println("  Animal  : " + consulta.getAnimal().getNome());
-        System.out.println("  Data    : " + consulta.getData() + " às " + consulta.getHora());
-        System.out.println("----------------------------------------");
+    public void notificarCancelamento(String tutor, Animal animal, String motivo) {
+        System.out.println("[CANCELAMENTO] Tutor: " + tutor
+                + " | Animal: " + animal.getNome()
+                + " | Motivo: " + motivo);
     }
 }

@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PortaConsultaRepositorio {
-    Consulta salvar(Consulta consulta);
+    void salvar(Consulta consulta);
     Optional<Consulta> buscarPorId(Long id);
     List<Consulta> buscarPorAnimal(Long animalId);
-    List<Consulta> buscarPorVeterinario(Long veterinarioId);
+    List<Consulta> buscarPorVeterinario(Long vetId);
     List<Consulta> listarAgendadas();
 }
